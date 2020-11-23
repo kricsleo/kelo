@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+  <defs>
+    <clipPath id="viewport">
+      <circle cx="200" cy="200" r="200" />
+    </clipPath>>
+    <clipPath id="second-clip">
+      <rect x="-130" y="200" width="250" height="200" transform="rotate(-50)" />
+    </clipPath>
+    <clipPath id="third-clip">
+      <rect x="0" y="250" width="200" height="300" transform="rotate(-25)" />
+    </clipPath>
+    <g id="brush" fill="#fff" stroke="#fff">
+      <path transform="rotate(-49.39407730102539 55.12895202636723,302.50976562500006) " d="m40.5,238.45313c-80,65 -5,47 11.5,35.54687c-15.5,19.45313 -30.5,32.45313 -19,34c13.5,1.45313 38.5,-27.54687 38,-28c-23.5,20.45313 -87.5,95.45313 -12,39c19.5,15.45313 25.5,-13.54687 29.5,-16.54687c4,-3 -59,4 -32,-1c-37,59 49,-33 -33.5,46.54687c2.5,45.45313 9.5,-4.54687 59,-23c-33.5,37.45313 -13.5,34.45313 24,-8" stroke-width="1.5" />
+      <rect transform="rotate(90.16405487060547 49.124267578124986,140.29063415527347) " height="103.2829" width="479.01188" y="88.64918" x="-290.38167" stroke-opacity="null" stroke-width="1.5"  />
+   </g>
+  </defs>
+  <circle cx="200" cy="200" r="198" fill="#000" />
+  <g clip-path="url(#viewport)">
+    <use href="#brush" x="150" y="-500" transform="rotate(30)">
+      <animate id="firstAnim" attributeName="y" begin="0;totalAnim.end+400ms" by="550" dur="400ms" fill="freeze" />
+      <set attributeName="y" to="-500" begin="totalAnim.end" />
+    </use>
+    <g clip-path="url(#second-clip)">
+      <use href="#brush" x="-300" y="-400" transform="rotate(-115)">
+        <animate id="secondAnim" attributeName="y" begin="firstAnim.end" by="400" dur="400ms" fill="freeze" />
+        <set attributeName="y" to="-400" begin="totalAnim.end" />
+      </use>
+    </g>
+    <g  clip-path="url(#third-clip)">
+      <use href="#brush" x="30" y="-150" transform="rotate(-25)">
+        <animate id="thirdAnim" attributeName="y" begin="secondAnim.end" by="400" dur="400ms" fill="freeze" />
+        <set attributeName="y" to="-150" begin="totalAnim.end" />
+      </use>
+    </g>
+    <animate id="totalAnim" attributeName="opacity" begin="thirdAnim.end" from="1" to="0" dur="400ms" />
+  </g>
+</svg>

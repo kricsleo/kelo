@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>object-defineProperty [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>object-defineProperty</h1><h1 id="属性描述符"><a href="#属性描述符" class="headerlink" title="属性描述符"></a>属性描述符</h1><p>在js的对象中通常会有很多个属性, 例如<code>let person = &#123; name: &#39;john&#39;&#125;</code>中的<code>name</code>就是<code>person</code>这个对象的一个属性, 我们可以定义这个属性的一些特性, 也就是来描述这个属性, 比如这个属性是否是可读写的, 是否是可以被枚举的等等, 由此产生出了<strong>属性描述符</strong>这个概念.</p>
+<a id="more"></a>
+<p>属性描述符分为两种: <code>数据描述符</code>和<code>存取描述符</code>:</p>
+<ul>
+<li><code>数据描述符</code>是一个拥有可写或不可写值的属性</li>
+<li><code>存取描述符</code>是由一对<code>getter-setter</code>函数功能来描述的属性</li>
+</ul>
+<p>属性描述符必须是两种形式其中之一, 不能同时是两者. 我们使用<code>Object.defineProperty()</code>这个方法来定义一个属性的属性描述符.</p>
+<h2 id="数据描述符"><a href="#数据描述符" class="headerlink" title="数据描述符"></a>数据描述符</h2><p>数据描述符有四个: <code>configurable</code>, <code>enumerable</code>, <code>writable</code>和<code>value</code>, 前三个属性在使用<code>Object.defineProperty()</code>定义时默认都是<code>false</code>,第四个属性<code>value</code>默认为<code>undefined</code>, 而如果使用字面量直接添加属性的话, 那么这个属性的前三个属性默认都是<code>true</code>. 下面具体说一下这个四个属性:</p>
+<ul>
+<li><code>configurable</code></li>
+</ul>
+<p>是否可以删除目标属性或是否可以再次修改属性的四个特性, 意思是当设置为<code>true</code>时可以随时对<code>configurable</code>, <code>enumerable</code>, <code>writable</code>和<code>value</code>这四个属性进行修改, 但是一旦设置为<code>false</code>, 那么这个四个属性将都不能被更改, 你也无法再次将<code>configurable</code>设置为<code>true</code>, 默认为<code>false</code></p>
+<ul>
+<li><code>enumerable</code></li>
+</ul>
+<p>此属性是否可以被枚举（使用<code>for...in</code>或<code>Object.keys()</code>）。设置为<code>true</code>可以被枚举；设置为<code>false</code>，不能被枚举, 默认为<code>false</code></p>
+<ul>
+<li><code>writable</code></li>
+</ul>
+<p>属性的值是否可以被重写。设置为<code>true</code>可以被重写；设置为<code>false</code>，不能被重写, 默认为<code>false</code></p>
+<ul>
+<li><code>value</code></li>
+</ul>
+<p>属性对应的值,可以使任意类型的值，默认为<code>undefined</code></p>
+<p>使用举例:</p>
+<pre><code class="hljs JavaScript"><span class="hljs-keyword">let</span> person = &#123;
+  name: <span class="hljs-string">&#x27;john&#x27;</span>
+&#125;
+
+<span class="hljs-comment">// 定义一个已经有的属性 name, 或者新增一个属性 name, 写法一样</span>
+<span class="hljs-built_in">Object</span>.defineProperty(person, <span class="hljs-string">&#x27;name&#x27;</span>, &#123;
+  configurable: <span class="hljs-literal">true</span> | <span class="hljs-literal">false</span>,
+  enumerable: <span class="hljs-literal">true</span> | <span class="hljs-literal">false</span>,
+  writable: <span class="hljs-literal">true</span> | <span class="hljs-literal">false</span>,
+  value: 任意类型的值
+&#125;);
+
+<span class="hljs-comment">// 查看属性</span>
+<span class="hljs-built_in">Object</span>.getOwnPropertyDescriptor(person, <span class="hljs-string">&#x27;name&#x27;</span>);
+<span class="hljs-comment">// =&gt; &#123;</span>
+<span class="hljs-comment">//      configurable: true,</span>
+<span class="hljs-comment">//      enumerable: true,</span>
+<span class="hljs-comment">//      writable: true,</span>
+<span class="hljs-comment">//      value: &#x27;john&#x27;</span>
+<span class="hljs-comment">//    &#125;</span></code></pre>
+
+<p>ES5有三个操作符会忽略掉对象中<code>enumerable</code>设置为<code>false</code>的属性:</p>
+<ul>
+<li><code>for...in</code>循环: 只遍历对象自身的和继承的可枚举的属性</li>
+<li><code>Object.keys()</code>：返回对象自身的所有可枚举的属性的键名</li>
+<li><code>JSON.stringify()</code>：只串行化对象自身的可枚举的属性</li>
+</ul>
+<p>ES6新增了一个操作<code>Object.assign()</code>，也会忽略对象中<code>enumerable</code>为<code>false</code>的属性，只拷贝对象自身的可枚举的属性。</p>
+<h2 id="存取描述符"><a href="#存取描述符" class="headerlink" title="存取描述符"></a>存取描述符</h2><p>存取描述符也有四个: <code>configurable</code>, <code>enumerable</code>, <code>get</code>和<code>set</code>, 前两个属性在使用<code>Object.defineProperty()</code>定义时默认都是<code>false</code>, 后两个属性默认是<code>undefined</code>, 而如果使用字面量直接添加属性的话, 那么这个属性的前两个属性默认都是<code>true</code>, 下面具体说一下这个四个属性:</p>
+<ul>
+<li><code>configurable</code></li>
+</ul>
+<p>与上面<code>数据描述符</code>中相同</p>
+<ul>
+<li><code>enumerable</code></li>
+</ul>
+<p>与上面<code>数据描述符</code>中相同</p>
+<ul>
+<li><code>get</code></li>
+</ul>
+<p>获取对象中属性值的方法, 它的值应该是一个返回这个属性值的方法, 默认为<code>undefined</code></p>
+<ul>
+<li><code>set</code></li>
+</ul>
+<p>设置对象中属性值的方法, 它的值应该是一个接受一个新值作为参数然后执行设置属性值的方法, 默认为<code>undefined</code></p>
+<p>使用举例:</p>
+<pre><code class="hljs JavaScript"><span class="hljs-keyword">let</span> person = &#123; <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;john&#x27;</span> &#125;;
+
+<span class="hljs-built_in">Object</span>.defineProperty(person, <span class="hljs-string">&#x27;name&#x27;</span>, &#123;
+  configurable: <span class="hljs-literal">true</span> | <span class="hljs-literal">false</span>,
+  enumerable: <span class="hljs-literal">true</span> | <span class="hljs-literal">false</span>,
+  get: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>&#123;
+    <span class="hljs-keyword">return</span> value;
+  &#125; | <span class="hljs-literal">undefined</span>,
+  set: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">newVal</span>) </span>&#123;
+    <span class="hljs-function"><span class="hljs-title">if</span>(<span class="hljs-params">newVal !== value</span>)</span> &#123;
+      value = newVal;
+    &#125;
+  &#125; | <span class="hljs-literal">undefined</span>
+&#125;);</code></pre>
+
+<p>这里的<code>set</code>的用途就很强大了, 比如我们使用的Vue里面的数据绑定就是基于这个<code>set</code>实现的双向数据绑定, 这里埋下一个坑:<br>TODO: 分析Vue的源码中的数据绑定部分</p>
+<h2 id="属性的遍历"><a href="#属性的遍历" class="headerlink" title="属性的遍历"></a>属性的遍历</h2><ul>
+<li><code>for...in</code></li>
+</ul>
+<p><code>for...in</code>循环遍历对象自身的和继承的可枚举属性（不含Symbol属性)</p>
+<ul>
+<li><code>Object.keys(obj)</code></li>
+</ul>
+<p><code>Object.keys</code>返回一个数组，包括对象自身的（不含继承的）所有可枚举属性（不含Symbol属性）。</p>
+<ul>
+<li><code>Object.getOwnPropertyNames(obj)</code></li>
+</ul>
+<p><code>Object.getOwnPropertyNames</code>返回一个数组，包含对象自身的所有属性（不含Symbol属性，但是包括不可枚举属性）。</p>
+<ul>
+<li><code>Object.getOwnPropertySymbols(obj)</code></li>
+</ul>
+<p><code>Object.getOwnPropertySymbols</code>返回一个数组，包含对象自身的所有Symbol属性。</p>
+<ul>
+<li><code>Reflect.ownKeys(obj)</code></li>
+</ul>
+<p><code>Reflect.ownKeys</code>返回一个数组，包含对象自身的所有属性，不管是属性名是Symbol或字符串，也不管是否可枚举。</p>
+</article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>

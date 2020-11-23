@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>js-object [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>js-object</h1><h1 id="JavaScript的内存机制及按值传递"><a href="#JavaScript的内存机制及按值传递" class="headerlink" title="JavaScript的内存机制及按值传递"></a>JavaScript的内存机制及按值传递</h1><p>JavaScript是一门轻级的编程语言, 我之前也用过C++和Java, 相比起来JavaScript是一门年轻简约的编程语言, 但是我很看好这门语言, 我记得之前看过一个大牛说现在的前端开发是黎明前的黑暗, 在数年之内必定会清晰明朗起来. 自己深表赞同, JavaScript现在的确是有很多的缺陷, 相比较起来它的依赖库也不如java那般丰富, 但是它一个最大的优点(个人认为)就是它的轻量级, 你仅仅需要一个浏览器(或者Node环境, 但是Node其实也是基于Chrome的V8引擎), 他就能完成自己所有的工作, 我坚信随着各种标准的制定以及已经走在探索路上的前端开发师们能够很快为JavaScript带来它起飞的春天.</p>
+<p>上面是我的个人希冀, 说到这篇文章, 主要是记录一下JavaScript的内存机制以及按值传递规则, 因为我在JavaScript的开发过程中会不由自主的把它和我也使用过的C++和Java进行比较, 我认为编程语言是互通的, 但是它们在某些细节上的处理有所不同, 则正是我们需要去注意的.</p>
+<a id="more"></a>
+
+<h2 id="内存机制"><a href="#内存机制" class="headerlink" title="内存机制"></a>内存机制</h2><p>在JavaScript中有<code>堆</code>和<code>栈</code>两个存储概念, <code>堆</code>是用来存储<code>Object</code>型数据的 ,<code>栈</code>是用来存储6种基本数据类型(分别是<code>null</code>, <code>undefined</code>, <code>boolean</code>, <code>number</code>, <code>string</code>和ES6中新引入的<code>symbol</code>), 对于我们平时使用的数组<code>Array</code>其实是<code>Object</code>的继承而已, 可以使用<code>typeof</code>运算符查看一个数据的类型, 例如<code>typeof []</code>就会输出<code>object</code>, 另外一个比较特别的就是函数类型, 函数类型的<code>typeof</code>输出的是<code>function</code>, 但是函数其实也是存储在<code>堆</code>中的, 而且可以认为是以字符串的形式存储的.</p>
+<h3 id="为什么有堆和栈之分"><a href="#为什么有堆和栈之分" class="headerlink" title="为什么有堆和栈之分"></a>为什么有<code>堆</code>和<code>栈</code>之分</h3><p>与垃圾回收机制有关，为了使程序运行时占用的内存最小。<br>当一个方法执行时，每个方法都会建立自己的内存栈，在这个方法内定义的变量会逐个放入这块栈内存里，随着方法的执行结束，这个方法的内存栈也将自然销毁了。因此，所有在方法中定义的变量都是放在栈内存中的;<br>当我们在程序中创建一个对象时，这个对象将被保存到运行时数据区中，以便反复理由(因为对象的创建成本通常比较大),这个运行时数据区就是堆内存。堆内存中的对象不会随方法的结束而销毁，即使方法结束后，这个对象还可能被另一个引用变量所引用(方法的参数传递时很常见),则这个对象依然不会被销毁,只有当一个对象没有任何引用变量引用它时,系统的垃圾回收机制才会在核实的时候回收它。  –<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000016322927#articleHeader3">参考</a></p>
+<p>在我们知道了JavaScript中的对象是如何存储的之后, 我们就要看一下当我们生成一个变量的时候到底发生了什么.</p>
+<h2 id="生成变量"><a href="#生成变量" class="headerlink" title="生成变量"></a>生成变量</h2><p>假如我们生成的是一个存储基本数据类型的变量, 例如<code>let a = 3</code>或者<code>let b = &#39;hello&#39;</code>, 那么有如下两步:</p>
+<ol>
+<li>在<code>栈</code>中直接开辟出一小块空间</li>
+<li>把你赋予的数据(<code>3</code>或者<code>hello</code>)存储到这个<code>栈</code>空间中</li>
+</ol>
+<p>也就是说数据是直接存储在<code>栈</code>中, 但是当我们生成的是一个存储了对象类型的变量, 例如<code>let c = &#123;name: &#39;krics&#39;&#125;</code>, 那么这个时候过程就要复杂一些:</p>
+<ol>
+<li>在<code>堆</code>中开辟一块空间</li>
+<li>把你赋予的数据<code>&#123;name: &#39;krics&#39;&#125;</code>存储到这个<code>堆</code>空间中</li>
+<li>在<code>栈</code>中开辟一小块空间</li>
+<li>将之前存储了对象数据的<code>堆</code>空间的地址(指针形式)存储到现在刚刚开辟的这个<code>栈</code>空间中</li>
+</ol>
+<p>所以我们真正的数据其实是存储在<code>堆</code>中的, 我们拿到的<code>c</code>变量里面只是存储了数据的真实地址, 当我们需要访问或者操作数据的时候, JavaScript就会根据这个地址去找到对应的数据, 然后访问或者操作它.</p>
+<h2 id="值的拷贝"><a href="#值的拷贝" class="headerlink" title="值的拷贝"></a>值的拷贝</h2><p>我们需要永远记住最关键的一点: <strong>JavaScript中只存在按值传递!!!</strong><br>不同于C++中或者Java中经常出现的指针操作, 在JavaScript中不会出现按引用传递, JavaScript永远只操作一个变量最直接的值, 并不会考虑这个值是基本数据类型还是一个指针, 因为如果是指针, 也并不会去按照指针找到具体的数据, 然后拷贝数据什么的, 是指针, 那我就传递这个指针的字面值, 简单粗暴明了.</p>
+<p>例如:</p>
+<pre><code class="hljs JavaScript"><span class="hljs-keyword">let</span> a = <span class="hljs-string">&#x27;hello&#x27;</span>;
+<span class="hljs-keyword">let</span> b = a;
+
+b = <span class="hljs-string">&#x27;yell&#x27;</span>;
+
+<span class="hljs-built_in">console</span>.log(a); <span class="hljs-comment">// =&gt; &#x27;hello&#x27;</span>
+<span class="hljs-built_in">console</span>.log(b); <span class="hljs-comment">// =&gt; &#x27;yell&#x27;</span></code></pre>
+
+<p>这里发生的故事是:</p>
+<ol>
+<li>在<code>栈</code>中开辟了一个空间叫<code>a</code>, 然后在<code>a</code>里面存入了一个字符串<code>hello</code></li>
+<li>在<code>栈</code>中开辟了一个空间叫<code>b</code>, 然后在<code>b</code>里面存入了一个字符串<code>hello</code>(<code>按值传递</code>, 值是<code>hello</code>, 那么就再存一个<code>hello</code>)</li>
+<li>修改<code>栈</code>中<code>b</code>的值为<code>yell</code></li>
+<li>输出<code>a</code>的值, 没被改变过, 所以输出<code>hello</code></li>
+<li>输出<code>b</code>的值, 先是<code>hello</code>, 后来被改成了<code>yell</code>, 那么最后输出的就是<code>yell</code></li>
+</ol>
+<p>那么我们举一个对象的例子又如何呢?</p>
+<pre><code class="hljs JavaScript"><span class="hljs-keyword">let</span> c = &#123;<span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;krics&#x27;</span>&#125;;
+<span class="hljs-keyword">let</span> d = c;
+
+c.name = <span class="hljs-string">&#x27;leo&#x27;</span>;
+<span class="hljs-built_in">console</span>.log(d.name); <span class="hljs-comment">// =&gt; &#x27;leo&#x27;</span>
+
+d.name = <span class="hljs-string">&#x27;troy&#x27;</span>;
+<span class="hljs-built_in">console</span>.log(c.name); <span class="hljs-comment">// =&gt; &#x27;troy&#x27;</span></code></pre>
+
+<p>这里发生的故事是:</p>
+<ol>
+<li>先在<code>栈</code>中开辟一块空间名字叫做<code>c</code>, 然后在<code>堆</code>中开辟一块空间, 存入数据<code>&#123;name: &#39;krics&#39;&#125;</code>, 然后把<code>堆</code>中刚存储的数据的地址存到<code>c</code>中</li>
+<li>在<code>栈</code>中开辟一块空间名字叫做<code>d</code>, 然后把<code>c</code>中存储的值也就是<code>&#123;name: &#39;krics&#39;&#125;</code>的地址在<code>d</code>中再存储一份</li>
+<li>将<code>c</code>指向的对象中的<code>name</code>的值改为字符串<code>leo</code>,</li>
+<li><code>d</code>和<code>c</code>指向的是同一个对象, 所以第三步中通过<code>c</code>改了<code>name</code>的值以后, 通过<code>d</code>访问这个<code>name</code>时得到的也是改变后的值<code>leo</code></li>
+<li>第五和第六步与第三和第四步做法类似</li>
+</ol>
+<p>这里给出一个很有趣的思考题:</p>
+<pre><code class="hljs JavaScript"><span class="hljs-keyword">var</span> a = &#123;<span class="hljs-attr">n</span>:<span class="hljs-number">1</span>&#125;;
+<span class="hljs-keyword">var</span> b = a;
+a.x = a = &#123;<span class="hljs-attr">n</span>:<span class="hljs-number">2</span>&#125;;
+
+<span class="hljs-built_in">console</span>.log(a.x); <span class="hljs-comment">// =&gt; 想想这里 a.x 的值是什么</span>
+<span class="hljs-built_in">console</span>.log(b.x); <span class="hljs-comment">// =&gt; 想想这里 b.x 的值是什么</span></code></pre>
+
+<p>这里给个提示, 上面主要涉及到三个细节点, 一是JavaScript中正常运算顺序为从右到左, 二是<code>.</code>点运算符的优先级高于<code>=</code>等号, 三就是我们之前讨论过的对象如何赋值问题, 答案可以参考<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000016322927#articleHeader5">luoqua的文章</a></p>
+<p>最后我仍然要强调一点: <strong>JavaScript中只存在按值传递!!!</strong>(可以参考&lt;JavaScript高级程序设计&gt;一书中第四章’变量. 作用域和内存问题’)</p>
+</article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>

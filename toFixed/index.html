@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>toFixed [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>toFixed</h1><h1 id="JS-中的-toFixed精度问题"><a href="#JS-中的-toFixed精度问题" class="headerlink" title="JS 中的 toFixed精度问题"></a>JS 中的 <code>toFixed</code>精度问题</h1><p>在关于金额的计算中经常会出现精确到两位小数的情况, 然后如果直接使用js的<code>number.toFixed()</code>方法其实会导致意想不到的问题, 比如你可以猜一下下面表达式的执行结果</p>
+<pre><code class="hljs js"><span class="hljs-number">0.1</span> + <span class="hljs-number">0.2</span>;
+
+(<span class="hljs-number">1.555</span>).toFixed(<span class="hljs-number">2</span>);</code></pre>
+
+<a id="more"></a>
+
+<p>第一个表达式结算结果是<code>0.30000000000000004</code>, 第二个表达式结果是<code>&quot;1.55&quot;</code>, 其实这是 js 的浮点数存储方式导致的, 具体的可以看github上的一个讨论:<a target="_blank" rel="noopener" href="https://github.com/camsong/blog/issues/9">JavaScript 浮点数陷阱及解法</a>,  简单来说就是 js 里面对于小数的存储是不精确的, 所以在涉及到小数的运算的时候就有可能因为精度问题出现意想不到的计算结果. 如果是一般的运算的话可以使用这个库来解决这个问题<a target="_blank" rel="noopener" href="https://github.com/nefe/number-precision">nefe/number-precision</a>.</p>
+<p>关于<code>toFixed()</code>方式的说明在<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed">MDN</a>上说是采取的<strong>四舍五入</strong>的规则, 但是实际测试并非如此, 比如你可以猜一下下面表达式的执行结果:</p>
+<pre><code class="hljs js">(<span class="hljs-number">1.15</span>).toFixed(<span class="hljs-number">1</span>);
+
+(<span class="hljs-number">1.151</span>).toFixed(<span class="hljs-number">1</span>);
+
+(<span class="hljs-number">1.25</span>).toFixed(<span class="hljs-number">1</span>);</code></pre>
+
+<p>这三个表达式的执行结果分别是<code>&quot;1.1&quot;</code>, <code>&quot;1.2&quot;</code>和<code>&quot;1.3&quot;</code>, 按照四舍五入根本说不通, 其实<code>toFixed()</code>真正的规则是<strong>银行家舍入算法</strong></p>
+<h2 id="银行家舍入算法"><a href="#银行家舍入算法" class="headerlink" title="银行家舍入算法"></a>银行家舍入算法</h2><p>银行家舍入算法规则是<strong>四舍六入五考虑, 五后非零就进一, 五后为零看奇偶, 五前为偶应舍去, 五前为奇要进一</strong>, 之所以制定出这一套规则是因为在银行金额的计算中为了尽可能少的避免损失, 因为金额的舍去和进位总体来说要保持大致相同的概率, 这样最后计算出来的帐才会不盈不亏, 具体讨论可以看这里: <a target="_blank" rel="noopener" href="https://blog.csdn.net/MAOZEXIJR/article/details/78563531">为什么银行家舍入是合理的？</a>和<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/24580446">知乎的讨论</a></p>
+<p><strong>我不知道是不是chrome更新了的原因, 前几天刚测过的银行家算法来解释<code>toFixed()</code>是可以解释的通的, 但是写这篇笔记的时候我再次测试却又发现与之前的测试结果不一致了, 现在怎么都解释不通了</strong></p>
+<p>例如, 按照银行家算法, <code>(1.555).toFixed(2)</code>的结果应该是<code>&quot;1.56&quot;</code>, 但是今天的执行结果变成了<code>&quot;1.55</code>, 虽然满足了<strong>五前为奇</strong>但是却并没有<strong>进一</strong>, WTF???</p>
+<h2 id="如何修复toFixed-的舍入问题"><a href="#如何修复toFixed-的舍入问题" class="headerlink" title="如何修复toFixed()的舍入问题"></a>如何修复<code>toFixed()</code>的舍入问题</h2><p>不论怎样, 当日常编程中使用<code>toFixed()</code>碰到舍入的时候我们总希望能够按照我们所期望的真正的四舍五入那样返回结果, 所以只能手动的实现<code>toFixed()</code>方法.</p>
+<p>我下面只是随便实现的一个, 把原数先放大一定倍数, 然后利用<code>Math.round()</code>来做真正的四舍五入, 最后然后再缩小相同倍数, 这样处理一次之后就能排除特殊的<strong>五后</strong>的情况, 然后就可以使用<code>Number.toFixed()</code>方法得到理想中的四舍五入后的值, 简单的写了几个测试, 也许有特例是我没有覆盖到的?</p>
+<pre><code class="hljs js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toFixed</span>(<span class="hljs-params">value, digits</span>) </span>&#123;
+  <span class="hljs-keyword">const</span> multiple = <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, digits);
+  <span class="hljs-keyword">const</span> magnified = value * multiple;
+  <span class="hljs-keyword">const</span> roundedMagnified = <span class="hljs-built_in">Math</span>.round(magnified);
+  <span class="hljs-keyword">return</span> ( roundedMagnified / multiple ).toFixed(digits);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params">describe, fn</span>) </span>&#123;
+  <span class="hljs-built_in">console</span>.group(describe);
+  <span class="hljs-keyword">typeof</span> fn === <span class="hljs-string">&#x27;function&#x27;</span> &amp;&amp; fn();
+  <span class="hljs-built_in">console</span>.groupEnd();
+&#125;
+
+<span class="hljs-keyword">const</span> Expect = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>&#123;
+  <span class="hljs-built_in">this</span>.result = result;
+  <span class="hljs-built_in">this</span>.tobe = <span class="hljs-function"><span class="hljs-params">expectResult</span> =&gt;</span> &#123;
+    <span class="hljs-function"><span class="hljs-title">if</span>(<span class="hljs-params">result === expectResult</span>)</span> &#123;
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;passed&#x27;</span>);
+    &#125; <span class="hljs-keyword">else</span> &#123;
+      <span class="hljs-built_in">console</span>.error(<span class="hljs-string">`failed: expect <span class="hljs-subst">$&#123;result&#125;</span> to be equal to <span class="hljs-subst">$&#123;expectResult&#125;</span>`</span>);
+    &#125;
+  &#125;;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">expect</span>(<span class="hljs-params">result</span>) </span>&#123;
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Expect(result);
+&#125;
+
+<span class="hljs-comment">// test</span>
+test(<span class="hljs-string">&#x27;test toFixed&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;
+  expect(toFixed(<span class="hljs-number">1.55</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.6&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.45</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.5&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.550</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.6&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.551</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.6&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.552</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.6&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.450</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.5&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.451</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.5&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.452</span>, <span class="hljs-number">1</span>)).tobe(<span class="hljs-string">&#x27;1.5&#x27;</span>);
+
+  expect(toFixed(<span class="hljs-number">1.55</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.55&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.45</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.45&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.550</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.55&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.551</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.55&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.552</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.55&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.450</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.45&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.451</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.45&#x27;</span>);
+  expect(toFixed(<span class="hljs-number">1.452</span>, <span class="hljs-number">2</span>)).tobe(<span class="hljs-string">&#x27;1.45&#x27;</span>);
+&#125;);
+</code></pre></article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>

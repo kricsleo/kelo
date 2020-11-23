@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>markdown [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>markdown</h1><h1 id="markdown语法整理"><a href="#markdown语法整理" class="headerlink" title="markdown语法整理"></a>markdown语法整理</h1><p>经常使用markdown来做笔记，这里把现在常用的语法先记录一下，万一老年人了记忆不好，也可以查一查</p>
+<a id="more"></a>
+
+<h2 id="标题"><a href="#标题" class="headerlink" title="标题"></a>标题</h2><pre><code class="hljs markdown"><span class="hljs-section"># h1</span>
+......
+<span class="hljs-section">###### h6</span>
+
+分隔符
+最少三个---或<span class="hljs-strong">**<span class="hljs-emphasis">*</span></span></code></pre>
+
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><pre><code class="hljs markdown">(部分markdown软件不支持)
+[TOC]</code></pre>
+
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><pre><code class="hljs markdown"><span class="hljs-quote">&gt; quote(每行最后添加两个空格即表示换行)  </span>
+quote  
+
+<span class="hljs-quote">&gt; quote(或者采取每行前面都添加引用标志)</span>
+<span class="hljs-quote">&gt; quote</span>
+
+<span class="hljs-quote">&gt; quote(多行嵌套引用)</span>
+&gt;&gt; quote2
+&gt;&gt;&gt; quote3</code></pre>
+
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><pre><code class="hljs markdown">行内代码<span class="hljs-code">`code`</span>行内代码
+
+多行代码，[<span class="hljs-string">支持高亮语言</span>](<span class="hljs-link">https://blog.csdn.net/qq_32126633/article/details/78838494#language_key</span>)</code></pre>
+
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><pre><code class="hljs markdown">[<span class="hljs-string">个人博客</span>](<span class="hljs-link">https://kricsleo.github.io/ &#x27;krics的个人博客&#x27;</span>)
+或者
+[<span class="hljs-symbol">blog</span>]: <span class="hljs-link">https://kricsleo.github.io/ &#x27;krics的个人博客&#x27;</span>
+[<span class="hljs-string">个人博客</span>][<span class="hljs-symbol">blog</span>]</code></pre>
+
+<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><pre><code class="hljs markdown">![<span class="hljs-string">个人头像</span>](<span class="hljs-link">https://kricsleo.github.io/images/avatar.jpg &#x27;krics的个人头像&#x27;</span>)
+或者
+[<span class="hljs-symbol">avatar</span>]: <span class="hljs-link">https://kricsleo.github.io/images/avatar.jpg &#x27;krics的个人头像&#x27;</span>
+![<span class="hljs-string">个人头像</span>][<span class="hljs-symbol">avatar</span>]
+图片带链接
+[<span class="hljs-string">![个人头像</span>](<span class="hljs-link">https://kricsleo.github.io/images/avatar.jpg &#x27;krics的个人头像&#x27;</span>)](<span class="hljs-link">https://kricsleo.github.io/images/avatar.jpg</span>)</code></pre>
+
+<h2 id="序表"><a href="#序表" class="headerlink" title="序表"></a>序表</h2><pre><code class="hljs markdown">有序节点
+<span class="hljs-bullet">1.</span> 节点1
+<span class="hljs-bullet">    1.</span> 节点1.1
+<span class="hljs-bullet">2.</span> 节点2
+无序节点
+<span class="hljs-bullet">-</span> 节点$
+<span class="hljs-bullet">    -</span> 节点$.^
+<span class="hljs-bullet">-</span> 节点#
+<span class="hljs-bullet">    -</span> 节点#.&amp;</code></pre>
+
+<h2 id="任务"><a href="#任务" class="headerlink" title="任务"></a>任务</h2><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> [ ] 未完成
+<span class="hljs-bullet">-</span> [x] 已完成</code></pre>
+<h2 id="表格"><a href="#表格" class="headerlink" title="表格"></a>表格</h2><pre><code class="hljs markdown"><span class="hljs-section"># 附上[<span class="hljs-string">在线生成表格工具</span>](<span class="hljs-link">https//www.tablesgenerator.com/markdown_tables</span>)</span>
+|    a    |       b       |      c     |
+|:-------:|:------------- | ----------:|
+|   居中   |      左对齐    |    右对齐   |</code></pre>
+
+<h2 id="语义性"><a href="#语义性" class="headerlink" title="语义性"></a>语义性</h2><pre><code class="hljs markdown"><span class="hljs-emphasis">*斜体*</span> or <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">i</span>&gt;</span></span>斜体<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span></span>
+<span class="hljs-strong">**加粗**</span> or <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span></span>加粗<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span></span>
+<span class="hljs-strong">**<span class="hljs-emphasis">*斜体加粗<span class="hljs-strong">**<span class="hljs-emphasis">* or <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">em</span>&gt;</span></span>强调<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">em</span>&gt;</span></span></span></span></span></span>
+<span class="hljs-strong"><span class="hljs-emphasis"><span class="hljs-strong"><span class="hljs-emphasis">~~删除线~~</span></span></span></span>
+<span class="hljs-strong"><span class="hljs-emphasis"><span class="hljs-strong"><span class="hljs-emphasis">上标<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">sup</span>&gt;</span></span>u<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">sup</span>&gt;</span></span></span></span></span></span>
+<span class="hljs-strong"><span class="hljs-emphasis"><span class="hljs-strong"><span class="hljs-emphasis">下标<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">sub</span>&gt;</span></span>d<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">sub</span>&gt;</span></span></span></span></span></span>
+<span class="hljs-strong"><span class="hljs-emphasis"><span class="hljs-strong"><span class="hljs-emphasis">键盘按键<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">kbd</span>&gt;</span></span>Ctrl<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">kbd</span>&gt;</span></span></span></span></span></span></code></pre>
+
+<h2 id="格式化显示"><a href="#格式化显示" class="headerlink" title="格式化显示"></a>格式化显示</h2><pre><code class="hljs markdown"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">pre</span>&gt;</span></span>
+<span class="hljs-code">    ...</span>
+<span class="hljs-code">&lt;pre&gt;</span></code></pre>
+
+<h2 id="公式"><a href="#公式" class="headerlink" title="公式"></a>公式</h2><ul>
+<li><input disabled="" type="checkbox"> 目前还不常用，之后补齐  <h2 id="脚注"><a href="#脚注" class="headerlink" title="脚注"></a>脚注</h2><pre><code class="hljs markdown">Markdown[^1]
+在页面底端注解
+[<span class="hljs-symbol">^1</span>]: <span class="hljs-link">Markdown是一种纯文本标记语言  </span></code></pre>
+
+</li>
+</ul>
+<h2 id="定义型列表"><a href="#定义型列表" class="headerlink" title="定义型列表"></a>定义型列表</h2><pre><code class="hljs markdown">Markdown
+:   Markdown是一种纯文本标记语言  (冒号后跟一个&#x27;Tab&#x27;或者四个空格)</code></pre>
+
+<h2 id="邮箱"><a href="#邮箱" class="headerlink" title="邮箱"></a>邮箱</h2><pre><code class="hljs markdown"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">xxx@163.com</span>&gt;</span></span></code></pre>
+
+<h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><p>markdown的代码绘制流程图个人感觉比较复杂，个人使用的在线绘制工具<a target="_blank" rel="noopener" href="https://www.processon.com/diagrams">ProcessOn</a></p>
+</article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>

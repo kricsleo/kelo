@@ -1,0 +1,7 @@
+.VHCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center; }
+
+.loading {
+  background-image: url("/images/loading.svg"); }

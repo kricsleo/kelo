@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>input-event [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>input-event</h1><h1 id="input-元素的事件顺序"><a href="#input-元素的事件顺序" class="headerlink" title="input 元素的事件顺序"></a>input 元素的事件顺序</h1><p>h5 的<code>&lt;input /&gt;</code>组件上有很多的事件, 这次来详细的探究一下它们的触发顺序和使用场景</p>
+<a id="more"></a>
+
+<p>我的测试是在 chrome 版本 73.0.3683.75（正式版本）（64 位）环境, 其它的浏览器可能有不同, 有时间再补充其它浏览器吧.</p>
+<p>目前来说比较常用的有<code>focus</code>/<code>keydown</code>/<code>input</code>/<code>keyup</code>/<code>compositionstart</code>/<code>compositionupdate</code>/<code>compositionend</code>/<code>change</code> </p>
+<p>点击一个输入框开始输入触发的事件顺序依次是: </p>
+<p><code>focus</code>=&gt;<code>keydown</code>(=&gt;<code>compositionstart</code>=&gt;<code>compositionupdate</code>)=&gt;<code>input</code>(=&gt;<code>compositionend</code>)=&gt;<code>keyup</code>  </p>
+<p> 如果是组合输入(比如中文日文等)输入的话就会出现括号中组合输入事件, 详细来说是当开始输入中文的时候就会触发<code>compositionstart</code>事件, 此时<code>input</code>事件和<code>keyup</code>事件拿到的输入框的值是不完整的(一般包含你输入的拼音和拼音之间的分号), 当中文输入结束的时候会触发<code>compositionend</code>事件, 此时可以取到该输入框的完整的输入中文后的值(一般而言这个值是我们所需要的)</p>
+<p> (额外的一点是从<code>input</code>事件开始可以拿到最新输入的值, 前面的事件拿到的值都要落后一次, 少了最后一次输入的字符)</p>
+<p><code>change</code>事件的触发需要<strong>两个条件</strong>, 一是<code>input</code>元素即将失焦, 事件顺序是<code>change</code>=&gt;<code>blur</code>, 二是本次失焦后的内容与前一次失焦后的内容不同(如果相同是不会触发该事件的),</p>
+<p>最常用的场景之一是<code>input</code>用来搜索的时候, 我们的需求是输入变化的时候就去查询(当然有节流), 但是在中文输入的时候就不要查询, 直到中文输入结束之后再查询, 这样可以避免用一些明显无效的关键词如<code>文章n&#39;r</code>去查询, 等到完整中文输入后变成<code>文章内容</code>再去查询</p>
+<pre><code class="hljs js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">throttle</span>(<span class="hljs-params">fn, minDelay, maxDelay</span>) </span>&#123;
+  <span class="hljs-keyword">let</span> timer;
+  <span class="hljs-keyword">let</span> startTime = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;
+    <span class="hljs-keyword">const</span> context = <span class="hljs-built_in">this</span>;
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">arguments</span>;
+    <span class="hljs-keyword">let</span> curTime = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+    <span class="hljs-built_in">clearTimeout</span>(timer);
+    <span class="hljs-keyword">if</span> (curTime - startTime &gt;= maxDelay) &#123;
+      fn.apply(context, args);
+      startTime = curTime;
+    &#125; <span class="hljs-keyword">else</span> &#123;
+      timer = <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> &#123;
+        fn.apply(context, args);
+      &#125;, minDelay);
+    &#125;
+  &#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listenInput</span>(<span class="hljs-params">selector, cb, delay = <span class="hljs-number">150</span>, maxDelay = <span class="hljs-number">1000</span></span>) </span>&#123;
+  <span class="hljs-keyword">const</span> el = <span class="hljs-built_in">document</span>.querySelector(selector);
+  <span class="hljs-function"><span class="hljs-title">if</span>(<span class="hljs-params">!el || !cb || <span class="hljs-keyword">typeof</span> cb !== <span class="hljs-string">&#x27;function&#x27;</span></span>)</span> &#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+  &#125;
+  <span class="hljs-keyword">const</span> throttleCB = throttle(cb, delay, maxDelay);
+  <span class="hljs-keyword">let</span> isComposition = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">const</span> compositionstart = <span class="hljs-function">() =&gt;</span> isComposition = <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">const</span> compositionend = <span class="hljs-function">() =&gt;</span> &#123;
+    isComposition = <span class="hljs-literal">false</span>;
+    throttleCB(el.value);
+  &#125;;
+  <span class="hljs-keyword">const</span> input = <span class="hljs-function">() =&gt;</span> &#123;
+    <span class="hljs-function"><span class="hljs-title">if</span>(<span class="hljs-params">isComposition</span>)</span> &#123;
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    &#125;
+    throttleCB(el.value);
+  &#125;
+
+  el.addEventListener(<span class="hljs-string">&#x27;compositionstart&#x27;</span>, compositionstart);
+  el.addEventListener(<span class="hljs-string">&#x27;compositionend&#x27;</span>, compositionend);
+  el.addEventListener(<span class="hljs-string">&#x27;input&#x27;</span>, input);
+  
+  <span class="hljs-keyword">return</span> <span class="hljs-function">() =&gt;</span> &#123;
+    el.removeEventListener(<span class="hljs-string">&#x27;compositionstart&#x27;</span>, compositionstart);
+    el.removeEventListener(<span class="hljs-string">&#x27;compositionend&#x27;</span>, compositionend);
+    el.removeEventListener(<span class="hljs-string">&#x27;input&#x27;</span>, input);
+  &#125;
+&#125;
+
+<span class="hljs-comment">// 使用示例</span>
+<span class="hljs-comment">// 开始监听, 默认最小间隔时间是150ms, 最大间隔时间是1000ms</span>
+<span class="hljs-keyword">const</span> removeListener = listenInput(<span class="hljs-string">&#x27;#inputId&#x27;</span>, <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(value);
+&#125;, <span class="hljs-number">100</span>, <span class="hljs-number">1500</span>);
+
+<span class="hljs-comment">// 取消监听</span>
+removeListener();</code></pre>
+</article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>

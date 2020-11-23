@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>ES6-map-set-symbol [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>ES6-map-set-symbol</h1><h1 id="ES6中新的数据类型"><a href="#ES6中新的数据类型" class="headerlink" title="ES6中新的数据类型"></a>ES6中新的数据类型</h1><p>在ES6里面引入了一些新的数据类型, 包括 <code>Map</code> / <code>Set</code> / <code>Symbol</code> 等等, 这里了解一下他们的用法和使用场景.</p>
+<a id="more"></a>
+
+<h2 id="Map"><a href="#Map" class="headerlink" title="Map"></a><code>Map</code></h2><p>我们之前存储键值对形式的数据使用的都是<code>&#123;&#125;</code>这样的<code>Object</code>对象, 但是很大的一个确定是键只能使用字符串, 即使传入的不是字符串内容, 内部也会将传入的值转换为字符串类型来存储, ES6中推出的<code>Map</code>可以解决这个局限性, <code>Map</code>中存储的键和值都可以是任意的类型, 是一种更完善的 Hash 结构实现.</p>
+<h3 id="Map相关API"><a href="#Map相关API" class="headerlink" title="Map相关API"></a><code>Map</code>相关API</h3><ol>
+<li><code>new Map()</code>构造函数</li>
+</ol>
+<pre><code class="hljs js"><span class="hljs-comment">// 构造函数</span>
+<span class="hljs-keyword">const</span> a = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>();
+
+<span class="hljs-comment">// 或者我们也可以传入数组作为构造函数的参数来生成一个 Map</span>
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>([
+  [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;krics&#x27;</span>],
+  [<span class="hljs-string">&#x27;gender&#x27;</span>, <span class="hljs-string">&#x27;male&#x27;</span>]
+]); <span class="hljs-comment">// =&gt; &#123;&quot;name&quot; =&gt; &quot;krics&quot;, &quot;gender&quot; =&gt; &quot;male&quot;&#125;</span></code></pre>
+
+<p>关于传入数组作为构造函数的参数然后生成 Map 时所发生的事情可以按照如下过程理解, 实际上会循环数组本身, 然后对每个子元素取出它的第一个值作为key, 第二个值作为value, 赋值到空的 Map 中, 注意是只会用到子元素的前两个值, 如果子元素中有更多的值, 那么并不会被赋值到 Map 中, 会被忽略掉.</p>
+<pre><code class="hljs js"><span class="hljs-keyword">const</span> arr = [
+  [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;krics&#x27;</span>],
+  [<span class="hljs-string">&#x27;gender&#x27;</span>, <span class="hljs-string">&#x27;male&#x27;</span>]
+];
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>();
+
+arr.forEach(<span class="hljs-function">(<span class="hljs-params">[key, value]</span>) =&gt;</span> b.set(key, value));</code></pre>
+
+<p>除了数组之外, 任何具有 Iterator 接口、且每个成员都是多个元素的数组的数据结构的都可以作为 Map 构造函数的参数. 例如使用 Set 类型数据作为参数:</p>
+<pre><code class="hljs js"><span class="hljs-keyword">const</span> set = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>([
+  [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;krics&#x27;</span>],
+  [<span class="hljs-string">&#x27;gender&#x27;</span>, <span class="hljs-string">&#x27;male&#x27;</span>]
+]);
+<span class="hljs-keyword">const</span> c = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>(set); <span class="hljs-comment">// =&gt; &#123;&quot;name&quot; =&gt; &quot;krics&quot;, &quot;gender&quot; =&gt; &quot;male&quot;&#125;</span></code></pre>
+
+<ol start="2">
+<li><p><code>Map.set(key, value)</code>添加值<br>参数<code>key</code>和<code>value</code>都可以是任意类型的, 并且执行后会返回当前<code>Map</code>对象, 所以可以链式调用<code>Map.set(key1, value1).set(key2, value2)</code>.<br><code>key</code>实际是和内存地址绑定的, 也就是说<code>Map.set(&#123;&#125;, 1).set(&#123;&#125;, 2)</code>会添加两个键值对到对象中, 因为两次使用的<code>&#123;&#125;</code>都会有各自的地址, 不是同一个对象, 如果对同一个键多次赋值, 最后一次会覆盖之前的值.<br>对于键值是否相同的判断可以大致理解为<code>===</code>判断, 唯一不同的是<code>===</code>认为<code>NaN</code>和<code>NaN</code>不等, 但是在<code>Map</code>中会被认为相同, 作为同一个键.</p>
+</li>
+<li><p><code>Map.get(key)</code>取值<br>返回对应的值, 如果<code>Map</code>对象中没有这个键, 则返回<code>undefined</code></p>
+</li>
+<li><p><code>Map.has(key)</code>判断是否有该键<br>有则返回<code>true</code>否则返回<code>false</code></p>
+</li>
+<li><p><code>Map.delete(key)</code>删除某个键值对<br>删除成功返回<code>true</code>否则返回<code>false</code></p>
+</li>
+<li><p><code>Map.clear()</code>清除所有的键值对<br>清除所有的键值对, 没有返回值</p>
+</li>
+<li><p><code>Map.size</code>当前键值对的数量<br>返回当前<code>Map</code>对象中的键值对数量</p>
+</li>
+<li><p>遍历<code>Map</code></p>
+<ul>
+<li><code>Map.keys()</code> 返回键名的遍历器</li>
+<li><code>Map.values()</code> 返回键值的遍历器</li>
+<li><code>Map.entries()</code> 返回所有成员的遍历器</li>
+<li><code>Map.forEach()</code> 遍历 Map 的所有成员</li>
+</ul>
+<p>需要特别注意的是，Map 的遍历顺序就是插入顺序.</p>
+</li>
+</ol>
+<h3 id="Map与其他数据类型的转换"><a href="#Map与其他数据类型的转换" class="headerlink" title="Map与其他数据类型的转换"></a><code>Map</code>与其他数据类型的转换</h3><p><code>Map</code>转为数组, 由于扩展运算符(<code>...</code>)底层实际调用的是数据结构的<code>Iterator</code>接口,因此只要具有<code>Iterator</code>接口的对象，都可以使用扩展运算符, <code>Map</code>也不例外.</p>
+<pre><code class="hljs js"><span class="hljs-comment">// 这里先使用一个数组生成了一个 map, 最后又使用生成的 map 转换得到了原来的数组</span>
+<span class="hljs-keyword">const</span> d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>([
+  [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;krics&#x27;</span>],
+  [<span class="hljs-string">&#x27;gender&#x27;</span>, <span class="hljs-string">&#x27;male&#x27;</span>]
+]);
+
+<span class="hljs-keyword">const</span> arr = [...d]; <span class="hljs-comment">// =&gt; [ [&quot;name&quot;, &quot;krics&quot;], [&quot;gender&quot;, &quot;male&quot;] ]</span></code></pre>
+
+<h3 id="弱化的WeakMap"><a href="#弱化的WeakMap" class="headerlink" title="弱化的WeakMap"></a>弱化的<code>WeakMap</code></h3><p><code>WeakMap</code>和<code>Map</code>的结构与用法基本相似, 不过存在一些比较重要的区别.</p>
+<ul>
+<li><code>WeakMap</code>只接受对象作为键名（<code>null</code>除外），不接受其他类型的值作为键名</li>
+<li><code>WeakMap</code>不能遍历, 也就是没有<code>keys()</code>, <code>values()</code>, <code>entries()</code>方法, 并且也没有<code>size</code>属性和<code>clear()</code>方法, 它保留的只有四个方法<code>set()</code>, <code>get()</code>, <code>has()</code>和<code>delete()</code></li>
+</ul>
+<p>之所以特意设计<code>WeakMap</code>这个类型, 实际是为了解决浏览器的内存释放问题, 浏览器内存的垃圾回收机制中其中一种叫<code>引用计数法</code>, 当一个对象的被引用次数大于等于1的时候, 浏览器是不会去清除回收这个对象的, 在老旧的IE中经常出现代码中引用了某个<code>DOM</code>元素, 但是由于当时的底层机制, 这个引用无法被清除, 导致<code>DOM</code>对象一直留存在内存中, 最后可能就会拖垮浏览器(现代的浏览器不会这样了), 所以考虑到有时候我们并不需要一个对象一直被引用导致内存空间无法被回收, 然后设计了<code>WeakMap</code>这个类型.</p>
+<p><code>WeakMap</code>中的键名所引用的对象是不会被<code>引用计数法</code>算作是引用的, 也就是说在内存回收的时候, 如果别的地方都没有使用这个对象了, 即使在<code>WeakMap</code>中有键名是在引用这个对象的, 那么浏览器也还是会回收这个对象, 释放掉它占用的内存. 需要注意的是这个弱化的过程只是弱化了键名的引用, 键值如果引用了某个对象, 那个对象是会被算做引用<code>+1</code>的.</p>
+<p>一旦键名引用的对象被回收掉了, 那么<code>WeakMap</code>中对应的这一项也会被自动清除, 不需要我们手动<code>delete()</code>删除这一项. 一个典型应用场景是，在网页的<code>DOM</code>元素上添加数据，就可以使用<code>WeakMap</code>结构。当该<code>DOM</code>元素被清除，其所对应的<code>WeakMap</code>记录就会自动被移除. 更详细的例子可以查看<a target="_blank" rel="noopener" href="http://es6.ruanyifeng.com/#docs/set-map">这里</a>.</p>
+<h2 id="Set"><a href="#Set" class="headerlink" title="Set"></a><code>Set</code></h2><p>ES6 为了改善之前一直使用<code>&#123;&#125;</code>来创建键值对形式的数据而新增了<code>Map</code>, 同样为了改善数组形式数据的使用而新增了<code>Set</code>, <code>Set</code>类似于数组, 但是其中的值都是唯一的, 不存在重复.(不会重复这一点可以用来去重或者交集并集等等)</p>
+<h3 id="Set相关API"><a href="#Set相关API" class="headerlink" title="Set相关API"></a><code>Set</code>相关API</h3><ol>
+<li><code>Set</code>本身是一个构造函数, 参数可以是数组或者其它有<code>iterable</code>接口的数据. 例如:</li>
+</ol>
+<pre><code class="hljs js"><span class="hljs-keyword">const</span> a = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>();
+
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">2</span>]); <span class="hljs-comment">// a =&gt; 1, 2, 3</span>
+
+<span class="hljs-keyword">const</span> c = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>(<span class="hljs-string">&#x27;aabaa&#x27;</span>); <span class="hljs-comment">// c =&gt; a, b</span></code></pre>
+
+<p><code>Array.from()</code>可以把<code>Set</code>转为普通数据.</p>
+<ol start="2">
+<li>其它api</li>
+</ol>
+<p>2.1 <code>add()</code>: 添加数据<br>2.2 <code>delete()</code>: 删除数据<br>2.3 <code>clear()</code>: 删除所有数据<br>2.4 <code>has()</code>: 判断是否有某个数据<br>2.5 <code>size</code>: 返回数据数目<br>2.6 <code>keys()</code>: 遍历键(与值实际相等)<br>2.7 <code>values()</code>: 遍历值<br>2.8 <code>entries()</code> 遍历键值对(键与值相等)<br>2.9 <code>forEach()</code>: 遍历值</p>
+<h3 id="WeakSet"><a href="#WeakSet" class="headerlink" title="WeakSet"></a><code>WeakSet</code></h3><p>ES6 同样也为<code>Set</code>提供了<code>WeakSet</code>类型, 与<code>WeakMap</code>十分相似, <code>WeakSet</code>中的值只能是对象, 不能是其他类型的值, 同样也是不计算引用次数的. 使用时可以用<code>new WeakSet()</code>来构建, 其他api与<code>Set</code>一致, 不过出于跟<code>WeakMap</code>相同的原因, 也是不能遍历的.</p>
+</article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>

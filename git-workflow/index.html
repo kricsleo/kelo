@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="description" content="kricsleo's blog"><meta name="keywords" content="[&quot;blog&quot;,&quot;kricsleo&quot;,&quot;IT&quot;,&quot;Web Front End&quot;]"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>git-workflow [ kricsleo ]</title><link rel="shortcut icon" href="/images/favicon.ico"><link rel="stylesheet" href="/css/yelo.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div class="page"><div class="page__body" id="page__body"><article id="post"><h1>git-workflow</h1><h3 id="git的日常使用流程记录"><a href="#git的日常使用流程记录" class="headerlink" title="git的日常使用流程记录"></a>git的日常使用流程记录</h3><p>内容参考于阮一峰老师的<a href="https//www.ruanyifeng.com/blog/2015/08/git-use-process.html">Git使用规范流程</a>，记录一下git的日常使用流程。</p>
+<a id="more"></a>
+<p><img src="https//www.ruanyifeng.com/blogimg/asset/2015/bg2015080501.png" alt="常用流程图"></p>
+<h4 id="1-新建分支"><a href="#1-新建分支" class="headerlink" title="1. 新建分支"></a>1. 新建分支</h4><p>开发新功能时都应该新建一个分支，在分支上开发，当功能开发完成时再合并到主分支，并销毁新建的分支。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># git checkout——检出，是我们的常用命令。最为常用的两种情形是创建分支和切换分支</span>
+<span class="hljs-comment"># 先切换到主分支，获取最新代码</span>
+git checkout master
+git pull
+
+<span class="hljs-comment"># 然后新建分支，在这个分支上进行新功能开发</span>
+git checkout -b myfeature</code></pre>
+<h4 id="2-提交分支"><a href="#2-提交分支" class="headerlink" title="2. 提交分支"></a>2. 提交分支</h4><p>新功能开发完成以后提交代码</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># 默认保存所有改动 --all</span>
+git add
+
+<span class="hljs-comment"># 查看发生改动的地方</span>
+git status
+
+<span class="hljs-comment"># 提交改动，也可以跟上 --verbose，然后就可以列出diff比较的结果，并且附上本次提交信息</span>
+git commit</code></pre>
+<h4 id="3-同步代码"><a href="#3-同步代码" class="headerlink" title="3. 同步代码"></a>3. 同步代码</h4><p>开发过程中可以经常同步主分支的最新代码，保证一直在最新的基础上进行开发</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># git fetch 表示取回最新代码</span>
+git fetch origin
+
+<span class="hljs-comment"># 将有更新的代码与当前分支合并</span>
+<span class="hljs-comment"># 所取回的更新，在本地主机上要用&quot;远程主机名/分支名&quot;的形式读取。比如origin主机的master，就要用origin/master读取。</span>
+git merge origin/masterdfdf</code></pre>
+<h4 id="4-合并多个commit"><a href="#4-合并多个commit" class="headerlink" title="4. 合并多个commit"></a>4. 合并多个commit</h4><p>新功能开发过程中一般会多次commit，但是在功能开发完成以后需要合并到主干时，一般把之前的commit合并成一个或几个关键的commit</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># git rebase命令的i参数表示互动（interactive），具体如何合并请参见原文</span>
+git rebase -i origin/master</code></pre>
+<h4 id="5-推送到远程仓库"><a href="#5-推送到远程仓库" class="headerlink" title="5. 推送到远程仓库"></a>5. 推送到远程仓库</h4><p>多个commit经过合理的处理以后就可以把当前分支推送到远程仓库了</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># git push命令要加上force参数，因为rebase以后，分支历史改变了，跟远程分支不一定兼容，有可能要强行推送</span>
+git push --force master myfeature</code></pre>
+<h4 id="6-发出Pull-Request"><a href="#6-发出Pull-Request" class="headerlink" title="6. 发出Pull Request"></a>6. 发出Pull Request</h4><p>提交到远程仓库以后，就可以发出 Pull Request 到master分支，然后请求别人进行代码review，确认可以合并到master。</p>
+<h2 id="常用-git-命令"><a href="#常用-git-命令" class="headerlink" title="常用 git 命令"></a>常用 git 命令</h2><pre><code class="hljs bash"><span class="hljs-comment"># 本地分支推送到远程</span>
+<span class="hljs-comment"># 参数: [origin] 远程主机名, 一般为 origin</span>
+<span class="hljs-comment"># [local-branch-name]: 本地创建的分支名</span>
+<span class="hljs-comment"># [remote-branch-name]: 把本地分支推送到哪个远程分支(一般和本地保持一致, 如果远程分支名不存在会自动创建)</span>
+git push [origin] [local-brand-name]:[remote-branch-name]
+
+<span class="hljs-comment"># 删除本地分支</span>
+<span class="hljs-comment"># 参数: -d 删除 -D 强制删除</span>
+git branch -[d|D] [local-branch-name]
+
+<span class="hljs-comment"># 删除远程分支</span>
+git push [origin] --delete [remote-branch-name]
+</code></pre>
+
+
+<p>参考文档: https//<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2014/06/git_remote.html">www.ruanyifeng.com/blog/2014/06/git_remote.html</a></p>
+<p>(end)</p>
+</article><div id="paginator"></div></div><div class="page__sidebar"><div class="page__sidebar__avatar"></div><h3 class="page__sidebar__title">kricsleo</h3><h4 class="page__sidebar__slogan">developer's lives matter</h4><div class="page__sidebar__columns"></div><div class="page__sidebar__tags"><a href="/tags/AST/" style="font-size: 12px;" class="sidebar-tag-0">AST</a> <a href="/tags/CORS/" style="font-size: 12px;" class="sidebar-tag-0">CORS</a> <a href="/tags/CSS/" style="font-size: 12px;" class="sidebar-tag-0">CSS</a> <a href="/tags/Content-Type/" style="font-size: 12px;" class="sidebar-tag-0">Content-Type</a> <a href="/tags/ES6/" style="font-size: 14.67px;" class="sidebar-tag-3">ES6</a> <a href="/tags/HTTP/" style="font-size: 12px;" class="sidebar-tag-0">HTTP</a> <a href="/tags/HTTP-2-0/" style="font-size: 12px;" class="sidebar-tag-0">HTTP/2.0</a> <a href="/tags/JavaScript/" style="font-size: 12px;" class="sidebar-tag-0">JavaScript</a> <a href="/tags/MVC/" style="font-size: 12px;" class="sidebar-tag-0">MVC</a> <a href="/tags/MVP/" style="font-size: 12px;" class="sidebar-tag-0">MVP</a> <a href="/tags/MVVM/" style="font-size: 12px;" class="sidebar-tag-0">MVVM</a> <a href="/tags/Mini-Program/" style="font-size: 12px;" class="sidebar-tag-0">Mini-Program</a> <a href="/tags/SASS/" style="font-size: 12px;" class="sidebar-tag-0">SASS</a> <a href="/tags/ast/" style="font-size: 12px;" class="sidebar-tag-0">ast</a> <a href="/tags/async/" style="font-size: 12px;" class="sidebar-tag-0">async</a> <a href="/tags/callback/" style="font-size: 12px;" class="sidebar-tag-0">callback</a> <a href="/tags/codeStyle/" style="font-size: 12px;" class="sidebar-tag-0">codeStyle</a> <a href="/tags/cookie/" style="font-size: 12px;" class="sidebar-tag-0">cookie</a> <a href="/tags/css/" style="font-size: 20px;" class="sidebar-tag-10">css</a> <a href="/tags/docker/" style="font-size: 12px;" class="sidebar-tag-0">docker</a> <a href="/tags/elasticsearch/" style="font-size: 12px;" class="sidebar-tag-0">elasticsearch</a> <a href="/tags/encrypt/" style="font-size: 14.67px;" class="sidebar-tag-3">encrypt</a> <a href="/tags/flex/" style="font-size: 12px;" class="sidebar-tag-0">flex</a> <a href="/tags/function/" style="font-size: 12px;" class="sidebar-tag-0">function</a> <a href="/tags/git/" style="font-size: 17.33px;" class="sidebar-tag-7">git</a> <a href="/tags/h5/" style="font-size: 14.67px;" class="sidebar-tag-3">h5</a> <a href="/tags/http/" style="font-size: 12px;" class="sidebar-tag-0">http</a> <a href="/tags/javascript/" style="font-size: 12px;" class="sidebar-tag-0">javascript</a> <a href="/tags/js/" style="font-size: 12px;" class="sidebar-tag-0">js</a> <a href="/tags/js%E6%80%AA%E5%BC%82%E4%BA%8B%E4%BB%B6%E5%BD%95/" style="font-size: 12px;" class="sidebar-tag-0">js怪异事件录</a> <a href="/tags/markdown/" style="font-size: 12px;" class="sidebar-tag-0">markdown</a> <a href="/tags/nginx/" style="font-size: 12px;" class="sidebar-tag-0">nginx</a> <a href="/tags/nodejs/" style="font-size: 12px;" class="sidebar-tag-0">nodejs</a> <a href="/tags/object/" style="font-size: 12px;" class="sidebar-tag-0">object</a> <a href="/tags/optimize/" style="font-size: 12px;" class="sidebar-tag-0">optimize</a> <a href="/tags/promise/" style="font-size: 12px;" class="sidebar-tag-0">promise</a> <a href="/tags/react/" style="font-size: 12px;" class="sidebar-tag-0">react</a> <a href="/tags/redux/" style="font-size: 12px;" class="sidebar-tag-0">redux</a> <a href="/tags/same-origin/" style="font-size: 12px;" class="sidebar-tag-0">same-origin</a> <a href="/tags/service-worker/" style="font-size: 12px;" class="sidebar-tag-0">service-worker</a> <a href="/tags/shell/" style="font-size: 12px;" class="sidebar-tag-0">shell</a> <a href="/tags/speed/" style="font-size: 12px;" class="sidebar-tag-0">speed</a> <a href="/tags/ssh/" style="font-size: 12px;" class="sidebar-tag-0">ssh</a> <a href="/tags/toLocaleString/" style="font-size: 12px;" class="sidebar-tag-0">toLocaleString</a> <a href="/tags/trick/" style="font-size: 12px;" class="sidebar-tag-0">trick</a> <a href="/tags/vue/" style="font-size: 12px;" class="sidebar-tag-0">vue</a> <a href="/tags/web-font/" style="font-size: 12px;" class="sidebar-tag-0">web-font</a> <a href="/tags/web%E4%BC%98%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">web优化</a> <a href="/tags/yahoo/" style="font-size: 12px;" class="sidebar-tag-0">yahoo</a> <a href="/tags/%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">前端模块化</a> <a href="/tags/%E5%9B%BD%E9%99%85%E5%8C%96/" style="font-size: 12px;" class="sidebar-tag-0">国际化</a></div><a class="page__sidebar__copywrite" href="https://kricsleo.com">@kricsleo</a></div></div><script src="/js/yelo.js"></script></body></html>
