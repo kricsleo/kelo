@@ -228,35 +228,29 @@ function fullscreenNode(viewport, target) {
             <use xlink:href="#kconClose"></use>
         </svg>
       </button>
-      <div className="post-fullscreen__content"></div>
+      <div class="post-fullscreen__content"></div>
     `
   });
+  viewport.appendChild(fullscreenNode);
+  const postFullscreenContentNode = fullscreenNode.getElementsByClassName('post-fullscreen__content')[0];
+
 
   let alreadyLoading = false;
   function insertPostContent() {
     const { loading, data } = getPostData(target.getAttribute('id'));
     if (loading) {
-      setTimeout(inserPostContent, 50);
+      setTimeout(insertPostContent, 50);
       if (alreadyLoading) {
         return;
       } else {
         alreadyLoading = true;
-        loadingMask(fullscreenNode);
+        loadingMask(postFullscreenContentNode);
       }
     } else {
-      alreadyLoading && removeLoading(fullscreenNode);
-      const postDetailNode = createNode({
-        type: 'div',
-        attribute: {
-          class: 'post-fullscreen__content'
-        },
-        children: data.content || 'No Content.'
-      });
-      fullscreenNode.appendChild(postDetailNode);
+      postFullscreenContentNode.innerHTML = data.content || 'No Content.';
     }
   }
   insertPostContent()
-  viewport.appendChild(fullscreenNode);
   requestAnimationFrame(() => setStyle(fullscreenNode, {
     clip: `rect(0 ${numberToPx(clientWidth)} ${numberToPx(clientHeight)} 0)`,
     zIndex: 1,
@@ -308,7 +302,6 @@ function createHandlePostDetail() {
       };
     },
     get: postPath => {
-      console.log('loadedPostInfo', loadedPostInfo, postPath)
       return postPath ? loadedPostInfo[pathToUrl(postPath)] || {} : {};
     }
   }
@@ -322,30 +315,27 @@ function loadingMask(node) {
     attribute: {
       class: 'loading-mask VHCenter',
       style: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)'
+        position: 'static',
+        height: '100%'
       }
-    }
-  }, [{
-    type: 'div',
-    attribute: {
-      class: 'loading',
-      style: {
-        width: numberToPx(100),
-        height: numberToPx(100)
+    },
+    children: [{
+      type: 'div',
+      attribute: {
+        class: 'loading',
+        style: {
+          width: numberToPx(100),
+          height: numberToPx(100)
+        }
       }
-    }
-  }]);
+    }]
+  });
   node.appendChild(maskNode);
 }
 
 function removeLoading(node) {
   const maskNode = node.getElementsByClassName('loading-mask')[0];
-  node.removeChild(maskNode);
+  node.parentElement.removeChild(maskNode);
 }
 
 
