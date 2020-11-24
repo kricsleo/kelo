@@ -40,8 +40,6 @@ function cs(node) {
   return fn;
 }
 
-
-
 /**
  * return a function to constantly load posts with pagination
  */
@@ -85,21 +83,15 @@ function observe(root, child, cb, bottomThreshold = 100) {
  * @param {*} post post content
  */
 function createPostNode(post) {
-  const node = document.createElement("div");
-  node.classList.add("post");
-  node.innerHTML = `
-    <div class="post__content" data-path="${post.path}">
-      <div class="post__content__body">
-        ${post.excerpt || `<h1>${post.title || '谜一样的内容'}</h1>`}
-      </div>
-      <button class="post__content__close VHClose">
-        <svg class="kcon" aria-hidden="true">
-            <use xlink:href="#kconClose"></use>
-        </svg>
-      </button>
-    </div>
-  `;
-  return node;
+  const postNode = createNode({
+    type: 'div',
+    attribute: {
+      class: 'post',
+      id: post.path
+    },
+    children: `${post.excerpt || `<h1>${post.title || '谜一样的内容'}</h1>`}`
+  });
+  return postNode;
 }
 
 /**
@@ -156,6 +148,27 @@ function delegateEvent(parent, targetClassName, event, cb) {
   return () => parent.removeEventListener(event, handler);
 }
 
+function createNode(config) {
+  if (typeof config === 'string') {
+    return document.createTextNode(config);
+  }
+  const { type, attribute, children } = config;
+  const node = document.createElement(type);
+  attribute && Object.entries(attribute).forEach(([key, value]) => {
+    switch (key) {
+      case 'style': setStyle(node, value); break;
+      case 'dataset': Object.entries(value).forEach(([dKey, dValue]) => node.dataset[dKey] = dValue); break;
+      default: node.setAttribute(key, value); break;
+    }
+  });
+  if (typeof children === 'string') {
+    node.innerHTML = children;
+  } else if (Array.isArray(children)) {
+    children.forEach(child => node.appendChild(createNode(child)));
+  }
+  return node;
+}
+
 function setStyle(node, style) {
   Object.entries(style).forEach(([key, value]) => node.style[key] = value);
   return node;
@@ -195,28 +208,71 @@ function unPinNode(node) {
 //   })
 // }
 
-function fullscreenNode(parent, target) {
-  const { clientHeight, clientWidth } = parent;
+function fullscreenNode(viewport, target) {
+  const { clientHeight, clientWidth } = viewport;
   const { top, left, bottom, right } = target.getBoundingClientRect();
-  setStyle(target, {
-    position: 'absolute',
-    top: numberToPx(top),
-    left: numberToPx(left),
-    bottom: numberToPx(clientHeight - bottom),
-    right: numberToPx(clientWidth - right)
+  const clip = `rect(${numberToPx(top)} ${numberToPx(right)} ${numberToPx(bottom)} ${numberToPx(left)})`;
+  const fullscreenNode = createNode({
+    type: 'div',
+    attribute: {
+      class: 'post-fullscreen',
+      dataset: { clip },
+      style: {
+        opacity: 0,
+        clip: `rect(${numberToPx(top)} ${numberToPx(right)} ${numberToPx(bottom)} ${numberToPx(left)})`
+      }
+    },
+    children: `
+      <button class="post-fullscreen__close VHClose">
+        <svg class="kcon" aria-hidden="true">
+            <use xlink:href="#kconClose"></use>
+        </svg>
+      </button>
+      <div className="post-fullscreen__content"></div>
+    `
   });
-  requestAnimationFrame(() => cs(target).add('post__content--fullscreen'));
+
+  let alreadyLoading = false;
+  function insertPostContent() {
+    const { loading, data } = getPostData(target.getAttribute('id'));
+    if (loading) {
+      setTimeout(inserPostContent, 50);
+      if (alreadyLoading) {
+        return;
+      } else {
+        alreadyLoading = true;
+        loadingMask(fullscreenNode);
+      }
+    } else {
+      alreadyLoading && removeLoading(fullscreenNode);
+      const postDetailNode = createNode({
+        type: 'div',
+        attribute: {
+          class: 'post-fullscreen__content'
+        },
+        children: data.content || 'No Content.'
+      });
+      fullscreenNode.appendChild(postDetailNode);
+    }
+  }
+  insertPostContent()
+  viewport.appendChild(fullscreenNode);
+  requestAnimationFrame(() => setStyle(fullscreenNode, {
+    clip: `rect(0 ${numberToPx(clientWidth)} ${numberToPx(clientHeight)} 0)`,
+    zIndex: 1,
+    opacity: 1
+  }));
 }
 
-function unfullscreenNode(node) {
-  cs(node).remove('post__content--fullscreen');
-  setTimeout(() => setStyle(node, {
-    position: 'static',
-    // top,
-    // left,
-    // bottom,
-    // right
-  }), 300);
+function unfullscreenNode() {
+  const fullscreenNode = document.getElementsByClassName('post-fullscreen')[0];
+  if (fullscreenNode) {
+    setStyle(fullscreenNode, {
+      clip: fullscreenNode.dataset.clip,
+      opacity: 0
+    })
+    setTimeout(() => fullscreenNode.parentElement.removeChild(fullscreenNode), 300);
+  }
 }
 
 function pathToUrl(postPath) {
@@ -252,30 +308,38 @@ function createHandlePostDetail() {
       };
     },
     get: postPath => {
-      const url = pathToUrl(postPath);
-      return loadedPostInfo[url] || {};
+      console.log('loadedPostInfo', loadedPostInfo, postPath)
+      return postPath ? loadedPostInfo[pathToUrl(postPath)] || {} : {};
     }
   }
 }
 
+const { load: loadPostJson, get: getPostData } = createHandlePostDetail();
+
 function loadingMask(node) {
-  const maskNode = document.createElement('div');
-  setStyle(maskNode, {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)'
-  });
-  cs(maskNode).add('loading-mask VHCenter');
-  const loadingNode = document.createElement('div');
-  setStyle(loadingNode, {
-    width: numberToPx(100),
-    height: numberToPx(100)
-  });
-  cs(loadingNode).add('loading');
-  maskNode.appendChild(loadingNode);
+  const maskNode = createNode({
+    type: 'div',
+    attribute: {
+      class: 'loading-mask VHCenter',
+      style: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)'
+      }
+    }
+  }, [{
+    type: 'div',
+    attribute: {
+      class: 'loading',
+      style: {
+        width: numberToPx(100),
+        height: numberToPx(100)
+      }
+    }
+  }]);
   node.appendChild(maskNode);
 }
 
@@ -301,7 +365,7 @@ const postsWrapperNode = document.getElementById('posts-wrapper');
 const postsNodes = [...document.getElementsByClassName('posts')];
 
 // init pagination
-function initPagination(loadPostJson) {
+function initPagination() {
   // create load posts functions
   const infiniteLoadPosts = createInfiniteLoadPosts();
 
@@ -345,45 +409,14 @@ function initPagination(loadPostJson) {
 
 function initLoadPostDetail(getPostData) {
   // cancel fullscreen
-  delegateEvent(pageBodyNode, 'post__content__close', 'click', (e, closeNode) => {
+  delegateEvent(pageBodyNode, 'post-fullscreen__close', 'click', (e, closeNode) => {
     e.stopPropagation();
-    const postContentNode = closeNode.parentElement;
-    const postNode = postContentNode.parentElement;
-    unPinNode(postNode);
-    unfullscreenNode(postContentNode);
-    const postContentBody = postContentNode.getElementsByClassName('post__content__body')[0];
-    const { data } = getPostData(postContentNode.dataset.path);
-    postContentBody.innerHTML = data.excerpt;
+    unfullscreenNode();
   });
 
   // enter fullscreen
   delegateEvent(pageBodyNode, 'post', 'click', (e, postNode) => {
-    const postContentNode = postNode.getElementsByClassName('post__content')[0];
-    const postContentBody = postNode.getElementsByClassName('post__content__body')[0];
-    if (postContentNode.classList.contains('post__content--fullscreen')) {
-      return;
-    }
-    pinNode(postNode);
-    fullscreenNode(pageBodyNode, postContentNode);
-
-    let alreadyLoading = false;
-    function insertPostContent() {
-      const { loading, data } = getPostData(postContentNode.dataset.path);
-      if (loading) {
-        setTimeout(inserPostContent, 50);
-        if (alreadyLoading) {
-          return;
-        } else {
-          alreadyLoading = true;
-          loadingMask(postContentNode);
-        }
-      } else {
-        alreadyLoading && removeLoading(postContentNode);
-        postContentBody.innerHTML = data.content || 'No Content.';
-      }
-    }
-    insertPostContent();
-
+    fullscreenNode(pageBodyNode, postNode);
   });
 }
 
@@ -396,11 +429,9 @@ function initKcon() {
 function init() {
   initKcon();
 
-  const { load: loadPostJson, get: getPostData } = createHandlePostDetail();
+  initPagination();
 
-  initPagination(loadPostJson);
-
-  initLoadPostDetail(getPostData);
+  initLoadPostDetail();
 }
 
 init();

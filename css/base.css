@@ -13,25 +13,34 @@
   list-style: none;
   border: none;
   outline: none; }
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px; }
+  *::-webkit-scrollbar-thumb {
+    border-radius: 999rem;
+    background-color: #119da4; }
+  *:hover::-webkit-scrollbar-thumb {
+    background-color: #119da4; }
+  *:hover::-webkit-scrollbar-thumb:hover {
+    background-color: #119da4; }
 
 html, body {
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.8;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   font-family: RobotoMono-Iconfont, consolas, Menlo, "PingFang SC", "Microsoft YaHei", monospace, Helvetica Neue For Number;
-  color: #3c4859;
   cursor: url("/images/cursor_16x16.ico"), auto;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   word-wrap: break-word;
-  color: #4c4e4d; }
+  color: #464646; }
 
 img {
   max-width: 100%; }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #4c4e4d; }
+  color: #464646; }
 
 a {
   color: #119da4;
